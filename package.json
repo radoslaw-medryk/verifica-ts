@@ -1,0 +1,20 @@
+{
+  "name": "verifica-ts",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "flatted": "^2.0.2",
+    "ts-materialise": "^0.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  },
+  "peerDependencies": {
+    "typescript": "^3.8.3",
+    "verifica": "^0.1.6"
+  }
+}
