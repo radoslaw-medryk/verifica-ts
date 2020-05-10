@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
+    "debug": "TS_NODE_COMPILER=ttypescript node --inspect-brk -r ts-node/register ./_debug.ts",
     "prepack": "npm run build",
     "build": "tsc"
   },
@@ -12,6 +13,8 @@
     "ts-materialise": "^0.1.2"
   },
   "devDependencies": {
+    "ts-node": "^8.10.1",
+    "ttypescript": "^1.5.10",
     "typescript": "^3.8.3",
     "verifica": "^0.1.6"
   },

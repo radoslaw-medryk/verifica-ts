@@ -232,7 +232,8 @@ function newEntries(entry: Entry): Entry[] {
       newFrame = newOrFrame(entry.parent.frame);
       entries.push(
         ...predicateI.types.map((q) => {
-          return newEntry(newFrame, entry.verificable, q);
+          const newNestedFrame = newAndFrame(newFrame);
+          return newEntry(newNestedFrame, entry.verificable, q);
         })
       );
       break;
@@ -260,41 +261,15 @@ function newEntries(entry: Entry): Entry[] {
 }
 
 function collectErrors(frame: Frame): VerificaError[] {
-  const errors: VerificaError[] = [];
-
-  const stack: Frame[] = [frame];
-  while (stack.length > 0) {
-    const current = stack.pop()!;
-
-    const frameErrors: VerificaError[] = [];
-    switch (current.type) {
-      case "and":
-        for (const path of current.paths) {
-          frameErrors.push(...(path.errors || []));
-        }
-        break;
-
-      case "or":
-        if (current.paths.some((q) => !q.errors || q.errors.length === 0)) {
-          break;
-        }
-        for (const path of current.paths) {
-          frameErrors.push(...(path.errors || []));
-        }
-    }
-
-    if (frameErrors.length > 0) {
-      errors.push(...frameErrors);
-      continue;
-    }
-
-    const deeperFrames = current.paths.map((q) => q.to).filter(isFrame);
-    stack.push(...deeperFrames);
+  if (
+    frame.type === "or" &&
+    frame.paths.some((q) => !q.errors || q.errors.length === 0)
+  ) {
+    return [];
   }
 
-  return errors;
-}
-
-function isFrame(value: Frame | Entry): value is Frame {
-  return value.type === "and" || value.type === "or";
+  return frame.paths.reduce<VerificaError[]>((arr, path) => {
+    arr.push(...(path.errors || []));
+    return arr;
+  }, []);
 }
