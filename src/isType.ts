@@ -3,12 +3,10 @@ import { Type, withType, HasMagicProperty } from "ts-materialise";
 import { isPredicateIMatch } from "./isPredicateIMatch";
 import { getPredicateI } from "./predicateI/getPredicateI";
 
-type IsType = <T>(a: string, b: number) => Predicate<T>;
+type IsType = <T>() => Predicate<T>;
 
 export const isType: IsType & HasMagicProperty = withType(function (
-  type: Type,
-  a: string,
-  b: number
+  type: Type
 ): Predicate<unknown> {
   const predicateI = getPredicateI(type);
 
