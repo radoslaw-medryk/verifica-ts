@@ -15,7 +15,12 @@
     "paths": {
       "@/*": ["*"]
     },
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "plugins": [
+      {
+        "transform": "./src/index.ts"
+      }
+    ]
   },
   "include": ["src/**/*"]
 }

@@ -44,7 +44,7 @@ export function isPredicateIMatch(predicateI: PredicateI): Predicate<unknown> {
       const preconditionErrors = getPreconditionErrors(current);
       if (preconditionErrors.length > 0) {
         cascadeErrors(current.parent, preconditionErrors);
-        break;
+        continue;
       }
 
       const entries = newEntries(current);
@@ -55,13 +55,13 @@ export function isPredicateIMatch(predicateI: PredicateI): Predicate<unknown> {
   };
 }
 
-function newAndFrame(frame?: Frame): Frame {
+function newAndFrame(parent?: Frame): Frame {
   let path: Path | undefined;
-  if (frame) {
+  if (parent) {
     path = {
-      frame,
+      frame: parent,
     } as any;
-    frame.paths.push(path as any);
+    parent.paths.push(path as any);
   }
 
   const newFrame: Frame = {
@@ -77,13 +77,13 @@ function newAndFrame(frame?: Frame): Frame {
   return newFrame;
 }
 
-function newOrFrame(frame?: Frame): Frame {
+function newOrFrame(parent?: Frame): Frame {
   let path: Path | undefined;
-  if (frame) {
+  if (parent) {
     path = {
-      frame,
+      frame: parent,
     } as any;
-    frame.paths.push(path as any);
+    parent.paths.push(path as any);
   }
 
   const newFrame: Frame = {
@@ -203,6 +203,8 @@ function cascadeErrors(path: Path, errors: VerificaError[]) {
 function newEntries(entry: Entry): Entry[] {
   const entries: Entry[] = [];
 
+  let newFrame: Frame;
+
   const predicateI = getResolved(entry.predicateI);
   switch (predicateI.type) {
     case "array":
@@ -211,45 +213,35 @@ function newEntries(entry: Entry): Entry[] {
         throw new Error("!Array.isArray(value)");
       }
 
+      newFrame = newAndFrame(entry.parent.frame);
       for (let i = 0; i < value.length; i++) {
-        entries.push(
-          newEntry(
-            newAndFrame(entry.parent.frame),
-            entry.verificable[i],
-            predicateI.of
-          )
-        );
+        entries.push(newEntry(newFrame, entry.verificable[i], predicateI.of));
       }
       break;
 
     case "intersection":
+      newFrame = newAndFrame(entry.parent.frame);
       entries.push(
         ...predicateI.types.map((q) => {
-          return newEntry(
-            newAndFrame(entry.parent.frame),
-            entry.verificable,
-            q
-          );
+          return newEntry(newFrame, entry.verificable, q);
         })
       );
       break;
 
     case "union":
+      newFrame = newOrFrame(entry.parent.frame);
       entries.push(
         ...predicateI.types.map((q) => {
-          return newEntry(newOrFrame(entry.parent.frame), entry.verificable, q);
+          return newEntry(newFrame, entry.verificable, q);
         })
       );
       break;
 
     case "object":
+      newFrame = newAndFrame(entry.parent.frame);
       for (const prop of predicateI.props) {
         entries.push(
-          newEntry(
-            newAndFrame(entry.parent.frame),
-            entry.verificable[prop.name],
-            prop.predicate
-          )
+          newEntry(newFrame, entry.verificable[prop.name], prop.predicate)
         );
       }
       break;
