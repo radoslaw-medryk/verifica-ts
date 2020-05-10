@@ -11,7 +11,7 @@ import {
 
 type Path = {
   frame: Frame;
-  errors?: VerificaError[];
+  errors: VerificaError[];
   to: Entry | Frame;
 };
 
@@ -37,10 +37,6 @@ export function isPredicateIMatch(predicateI: PredicateI): Predicate<unknown> {
     while (stack.length > 0) {
       const current = stack.pop()!;
 
-      if (isPathErrored(current.parent)) {
-        continue;
-      }
-
       const preconditionErrors = getPreconditionErrors(current);
       if (preconditionErrors.length > 0) {
         cascadeErrors(current.parent, preconditionErrors);
@@ -60,6 +56,7 @@ function newAndFrame(parent?: Frame): Frame {
   if (parent) {
     path = {
       frame: parent,
+      errors: [],
     } as any;
     parent.paths.push(path as any);
   }
@@ -82,6 +79,7 @@ function newOrFrame(parent?: Frame): Frame {
   if (parent) {
     path = {
       frame: parent,
+      errors: [],
     } as any;
     parent.paths.push(path as any);
   }
@@ -106,6 +104,7 @@ function newEntry(
 ): Entry {
   const path: Path = {
     frame,
+    errors: [],
   } as any;
   frame.paths.push(path);
 
@@ -119,20 +118,6 @@ function newEntry(
   path.to = entry;
 
   return entry;
-}
-
-function isPathErrored(path: Path): boolean {
-  let current: Path | undefined = path;
-
-  while (current) {
-    if (current.errors && current.errors.length > 0) {
-      return true;
-    }
-
-    current = current.frame.parent;
-  }
-
-  return false;
 }
 
 function getPreconditionErrors(entry: Entry): VerificaError[] {
@@ -178,10 +163,7 @@ function cascadeErrors(path: Path, errors: VerificaError[]) {
   let current: Path | undefined = path;
 
   while (current) {
-    if (current.errors) {
-      throw new Error("'current' already has errors.");
-    }
-    current.errors = [...errors];
+    pushUnique(current.errors, errors);
 
     switch (current.frame.type) {
       case "and":
@@ -190,14 +172,26 @@ function cascadeErrors(path: Path, errors: VerificaError[]) {
 
       case "or":
         const otherPaths = current.frame.paths.filter((q) => q !== current);
-        if (otherPaths.some((q) => !q.errors)) {
+        if (otherPaths.some((q) => q.errors.length === 0)) {
           return;
         }
+
+        errors = [
+          ...errors,
+          ...otherPaths.reduce<VerificaError[]>((arr, path) => {
+            arr.push(...path.errors);
+            return arr;
+          }, []),
+        ];
 
         current = current.frame.parent;
         break;
     }
   }
+}
+
+function pushUnique<T>(arr: T[], elements: T[]) {
+  arr.push(...elements.filter((q) => arr.every((x) => x !== q)));
 }
 
 function newEntries(entry: Entry): Entry[] {

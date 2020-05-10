@@ -4,11 +4,13 @@ import { isType } from "./src/isType";
 type NestedA = {
   type: "a";
   a: string;
+  c: { x: number };
 };
 
 type NestedB = {
   type: "b";
   b: number;
+  d: { y: number };
 };
 
 type Nested = NestedA | NestedB;
@@ -20,8 +22,14 @@ type Test = {
 const x = {
   arr: [
     {
-      type: "b",
+      type: "a",
       a: "xxx",
+      c: { x: 9 },
+    },
+    {
+      type: "b",
+      b: 123,
+      d: { y: 1 },
     },
   ],
 };
