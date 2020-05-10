@@ -1,4 +1,6 @@
 import { PredicateI } from "./predicateI/PredicateI";
+import { isPhantom } from "verifica";
+
 import {
   Predicate,
   VerificaError,
@@ -28,14 +30,22 @@ type Entry = {
   predicateI: PredicateI;
 };
 
+type TouchedMap = Map<unknown, PredicateI[]>;
+
 export function isPredicateIMatch(predicateI: PredicateI): Predicate<unknown> {
   return function _isPredicateIMatch(verificable) {
+    const touched: TouchedMap = new Map();
+
     const rootFrame = newAndFrame();
     const rootEntry = newEntry(rootFrame, verificable, predicateI);
 
     const stack: Entry[] = [rootEntry];
     while (stack.length > 0) {
       const current = stack.pop()!;
+
+      if (isTouched(touched, current)) {
+        continue;
+      }
 
       const preconditionErrors = getPreconditionErrors(current);
       if (preconditionErrors.length > 0) {
@@ -49,6 +59,24 @@ export function isPredicateIMatch(predicateI: PredicateI): Predicate<unknown> {
 
     return collectErrors(rootFrame);
   };
+}
+
+function isTouched(touched: TouchedMap, entry: Entry): boolean {
+  const { predicateI, verificable } = entry;
+  if (isPhantom(verificable)) {
+    return false;
+  }
+
+  const value = rawValue(verificable);
+
+  const touchedPredicates = touched.get(value) || [];
+  if (touchedPredicates.some((q) => q === predicateI)) {
+    return true;
+  }
+
+  touchedPredicates.push(predicateI);
+  touched.set(value, touchedPredicates);
+  return false;
 }
 
 function newAndFrame(parent?: Frame): Frame {

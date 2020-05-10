@@ -1,39 +1,22 @@
 import { getErrors, asVerificable } from "verifica";
 import { isType } from "./src/isType";
 
-type NestedA = {
-  type: "a";
-  a: string;
-  c: { x: number };
-};
-
-type NestedB = {
-  type: "b";
-  b: number;
-  d: { y: number };
-};
-
-type Nested = NestedA | NestedB;
-
-type Test = {
-  arr: Nested[];
+type Circ = {
+  id: string;
+  links: Circ[];
 };
 
 const x = {
-  arr: [
-    {
-      type: "a",
-      a: "xxx",
-      c: { x: 9 },
-    },
-    {
-      type: "b",
-      b: 123,
-      d: { y: 1 },
-    },
-  ],
+  id: "x",
+  links: [] as any[],
 };
 
-const e = getErrors(asVerificable(x), isType<Test>());
+const y = {
+  links: [] as any[],
+};
+x.links.push(y);
+y.links.push(x);
+
+const e = getErrors(asVerificable(x), isType<Circ>());
 console.log(e);
 console.log("end");
