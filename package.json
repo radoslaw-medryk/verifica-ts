@@ -1,25 +1,25 @@
 {
-  "name": "verifica-ts",
-  "version": "0.1.4",
-  "description": "",
-  "main": "dist/index.js",
-  "scripts": {
-    "debug": "TS_NODE_COMPILER=ttypescript node --inspect-brk -r ts-node/register ./_debug.ts",
-    "prepack": "npm run build",
-    "build": "tsc"
-  },
-  "dependencies": {
-    "flatted": "^2.0.2",
-    "ts-materialise": "^0.1.2"
-  },
-  "devDependencies": {
-    "ts-node": "^8.10.1",
-    "ttypescript": "^1.5.10",
-    "typescript": "^3.8.3",
-    "verifica": "^0.1.8"
-  },
-  "peerDependencies": {
-    "typescript": "^3.8.3",
-    "verifica": "^0.1.8"
-  }
+    "name": "verifica-ts",
+    "version": "0.1.5",
+    "description": "",
+    "main": "dist/index.js",
+    "scripts": {
+        "debug": "TS_NODE_COMPILER=ttypescript node --inspect-brk -r ts-node/register ./_debug.ts",
+        "prepack": "npm run build",
+        "build": "tsc"
+    },
+    "dependencies": {
+        "flatted": "^2.0.2",
+        "ts-materialise": "^0.1.2"
+    },
+    "devDependencies": {
+        "ts-node": "^8.10.1",
+        "ttypescript": "^1.5.10",
+        "typescript": "^3.8.3",
+        "verifica": "^0.1.11"
+    },
+    "peerDependencies": {
+        "typescript": "^3.8.3",
+        "verifica": "^0.1.11"
+    }
 }
