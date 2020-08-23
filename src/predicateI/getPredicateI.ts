@@ -75,6 +75,7 @@ function resolve(map: SymbolMap, type: Type): Type[] {
 
         case "builtin":
             symbol.value = resolveBuiltin(map, toResolve, type);
+            break;
 
         case "type-parameter":
             throw new Error("Cannot create predicate for unresolved generic type-parameter.");
