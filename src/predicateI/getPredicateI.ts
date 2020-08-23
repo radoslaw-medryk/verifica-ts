@@ -15,9 +15,10 @@ import { ObjectPredicateI } from "./ObjectPredicateI";
 import { UnionPredicateI } from "./UnionPredicateI";
 import { IntersectionPredicateI } from "./IntersectionPredicateI";
 import { PrimitivePredicateI } from "./PrimitivePredicateI";
-import { Predicate, isBoolean, isOneOf, isNumber, isString, isSymbol } from "verifica";
+import { Predicate, isBoolean, isOneOf, isNumber, isString, isSymbol, isDate } from "verifica";
 import { isUnknown } from "./predicates/isUnknown";
 import { isNever } from "./predicates/isNever";
+import { BuiltinType, BuiltinTypeKind } from "ts-materialise/dist/types/BuiltinType";
 
 type SymbolMap = Map<Type, SymbolPredicateI>;
 
@@ -71,6 +72,9 @@ function resolve(map: SymbolMap, type: Type): Type[] {
         case "literal":
             symbol.value = resolveLiteral(map, toResolve, type);
             break;
+
+        case "builtin":
+            symbol.value = resolveBuiltin(map, toResolve, type);
 
         case "type-parameter":
             throw new Error("Cannot create predicate for unresolved generic type-parameter.");
@@ -141,6 +145,13 @@ function resolveLiteral(map: SymbolMap, toResolve: Type[], type: LiteralType): P
     };
 }
 
+function resolveBuiltin(map: SymbolMap, toResolve: Type[], type: BuiltinType): PrimitivePredicateI {
+    return {
+        type: "primitive",
+        predicate: builtinPrimitivePredicate(type),
+    };
+}
+
 function getOrCreateSymbol(map: SymbolMap, type: Type): SymbolPredicateI {
     let symbol = map.get(type);
     if (!symbol) {
@@ -185,6 +196,13 @@ function simplePrimitivePredicate(type: BasicType): Predicate<unknown> {
 
         case BasicTypeKind.Undefined:
             return isOneOf([undefined]);
+    }
+}
+
+function builtinPrimitivePredicate(type: BuiltinType): Predicate<unknown> {
+    switch (type.kind) {
+        case BuiltinTypeKind.Date:
+            return isDate;
     }
 }
 
